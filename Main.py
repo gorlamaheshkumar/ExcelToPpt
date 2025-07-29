@@ -656,7 +656,7 @@ def apply_chart_styles(input_path, output_path, styles_to_apply: Dict[int, int])
 if __name__ == "__main__":
     EXCEL_FILE_PATH = 'Files/ExcelData27.xlsx'
     TEMPLATE_PPTX_PATH = 'Files/Default_Template.pptx'
-    FINAL_OUTPUT_PPTX_PATH = 'Output/T6_Full_Report.pptx'
+    FINAL_OUTPUT_PPTX_PATH = 'Output/Final_Output.pptx'
 
     SHEET_NAME_SLIDE_6 = 'Volumetric trends INC & RITM'
     SHEET_NAME_SLIDE_7 = 'Created'
