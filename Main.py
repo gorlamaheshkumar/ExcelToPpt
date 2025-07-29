@@ -654,9 +654,9 @@ def apply_chart_styles(input_path, output_path, styles_to_apply: Dict[int, int])
 # =================================================================================
 
 if __name__ == "__main__":
-    EXCEL_FILE_PATH = 'C:/Users/2399586/VScode/ExcelToPpt/Files/ExcelData27.xlsx'
-    TEMPLATE_PPTX_PATH = 'C:/Users/2399586/VScode/ExcelToPpt/Files/Default_Template.pptx'
-    FINAL_OUTPUT_PPTX_PATH = 'C:/Users/2399586/VScode/ExcelToPpt/Output/T6_Full_Report.pptx'
+    EXCEL_FILE_PATH = 'Files/ExcelData27.xlsx'
+    TEMPLATE_PPTX_PATH = 'Files/Default_Template.pptx'
+    FINAL_OUTPUT_PPTX_PATH = 'Output/T6_Full_Report.pptx'
 
     SHEET_NAME_SLIDE_6 = 'Volumetric trends INC & RITM'
     SHEET_NAME_SLIDE_7 = 'Created'
@@ -664,12 +664,12 @@ if __name__ == "__main__":
     SHEET_NAME_SLIDE_9 = 'Volumetric Change details'
     SHEET_NAME_SLIDE_10 = 'Business Services'
     
-    SLIDE_6_INDEX = 5
-    SLIDE_7_INDEX = 6
-    SLIDE_8_INDEX = 7
-    SLIDE_9_INDEX = 8
-    SLIDE_10_INDEX = 9
-    
+    SLIDE_6_INDEX = 2
+    SLIDE_7_INDEX = 3
+    SLIDE_8_INDEX = 4
+    SLIDE_9_INDEX = 5
+    SLIDE_10_INDEX = 6
+
     CHART_STYLE_FOR_LINE_CHARTS = 228
 
     os.makedirs(os.path.dirname(FINAL_OUTPUT_PPTX_PATH), exist_ok=True)
