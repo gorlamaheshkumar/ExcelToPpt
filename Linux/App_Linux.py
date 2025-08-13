@@ -7,40 +7,28 @@ import sys
 from flask import Flask, request, jsonify, send_from_directory, render_template
 
 # --- DYNAMIC PATH SETUP ---
-# This section correctly calculates all paths based on the script's location.
-
-# Get the directory of the current script (e.g., .../ExcelToPpt/Linux)
+# This setup correctly calculates all paths based on the script's location.
 script_dir = os.path.dirname(os.path.abspath(__file__))
-# Get the parent directory, which is the project's root (e.g., .../ExcelToPpt)
-BASE_DIR = os.path.dirname(script_dir)
+BASE_DIR = os.path.dirname(script_dir) # Assumes this script is in a subfolder like /Linux
 
-# Define all other paths relative to the project's root directory
 UPLOAD_DIR = os.path.join(BASE_DIR, "Uploads")
 OUTPUT_DIR = os.path.join(BASE_DIR, "Outputs")
 TEMPLATE_INPUT_DIR = os.path.join(BASE_DIR, "Templates_Files")
-MAIN_SCRIPT = os.path.join(script_dir, "Main_Linux.py") # Main_Linux.py is in the same folder as this script
+MAIN_SCRIPT = os.path.join(script_dir, "Main_Linux.py")
 
-# Define the paths for Flask's static and template folders
 TEMPLATE_FOLDER = os.path.join(BASE_DIR, "Templates")
 STATIC_FOLDER = os.path.join(BASE_DIR, "static")
-
 # --- END OF PATH SETUP ---
 
-# Create directories if they don't exist
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 os.makedirs(TEMPLATE_INPUT_DIR, exist_ok=True)
 
-# Initialize Flask, telling it where to find the templates folder
 app = Flask(__name__, template_folder=TEMPLATE_FOLDER, static_folder=STATIC_FOLDER)
 
-# In-memory task store (task_id -> info)
 tasks = {}
 
 def run_task_in_background(task_id, excel_path, template_path, output_path):
-    """
-    Spawns Main_Linux.py with environment variables set and captures logs.
-    """
     log_file = os.path.join(os.path.dirname(output_path), f"{task_id}.log")
     tasks[task_id]["status"] = "running"
     tasks[task_id]["started_at"] = time.time()
@@ -50,8 +38,8 @@ def run_task_in_background(task_id, excel_path, template_path, output_path):
     env["EXCEL_FILE_PATH"] = excel_path
     env["FINAL_OUTPUT_PPTX_PATH"] = output_path
     
-    if template_path:
-        env["TEMPLATE_PPTX_PATH"] = template_path
+    # This is now guaranteed to have a valid path
+    env["TEMPLATE_PPTX_PATH"] = template_path
 
     python_exec = sys.executable
     cmd = [python_exec, MAIN_SCRIPT]
@@ -95,18 +83,25 @@ def upload_file():
     os.makedirs(task_output_dir, exist_ok=True)
     output_path = os.path.join(task_output_dir, "Final_Report.pptx")
 
+    # --- THIS IS THE KEY FIX ---
     template_file = request.files.get("template")
-    template_path = ""
+    template_path = "" # This will now hold the correct path
+    
     if template_file and template_file.filename:
+        # If the user uploaded a template, save it and use its path
         tname = f"{task_id}_template.pptx"
         template_path = os.path.join(TEMPLATE_INPUT_DIR, tname)
         template_file.save(template_path)
+    else:
+        # If no template is uploaded, use the default template from the repo
+        template_path = os.path.join(BASE_DIR, "Files", "Default_Template.pptx")
+    # --- END OF FIX ---
 
     tasks[task_id] = {
         "status": "queued",
         "uploaded_at": time.time(),
         "excel_path": excel_path,
-        "template_path": template_path,
+        "template_path": template_path, # This will now always be a valid path
         "output_path": output_path
     }
 

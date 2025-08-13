@@ -1,0 +1,4 @@
+Using EXCEL_FILE_PATH = /workspaces/ExcelToPpt/Uploads/6873759ceaf0411d9b49549ce27f61bd.xlsb
+Using TEMPLATE_PPTX_PATH = C:/Users/2399586/VScode/ExcelToPpt/Files/Default_Template.pptx
+Using FINAL_OUTPUT_PPTX_PATH = /workspaces/ExcelToPpt/Outputs/6873759ceaf0411d9b49549ce27f61bd/Final_Report.pptx
+FATAL ERROR reading Excel file: Missing optional dependency 'pyxlsb'.  Use pip or conda to install pyxlsb.

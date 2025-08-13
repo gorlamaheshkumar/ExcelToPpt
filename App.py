@@ -9,16 +9,16 @@ from flask import Flask, request, jsonify, send_from_directory, render_template
 
 # Directories
 BASE_DIR = os.path.dirname(__file__)
-UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
-OUTPUT_DIR = os.path.join(BASE_DIR, "outputs")
-TEMPLATE_DIR = os.path.join(BASE_DIR, "templates_files")  # optional templates
+UPLOAD_DIR = os.path.join(BASE_DIR, "Uploads")
+OUTPUT_DIR = os.path.join(BASE_DIR, "Outputs")
+TEMPLATE_DIR = os.path.join(BASE_DIR, "Templates_Files")  # optional templates
 MAIN_SCRIPT = os.path.join(BASE_DIR, "Main.py")  # path to your main.py
 
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 os.makedirs(TEMPLATE_DIR, exist_ok=True)
 
-app = Flask(__name__, static_folder="static", template_folder="templates")
+app = Flask(__name__, static_folder="static", template_folder="Templates")
 
 # In-memory task store (task_id -> info)
 tasks = {}
@@ -69,7 +69,7 @@ def run_task_in_background(task_id, excel_path, template_path, output_path):
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return render_template("Index.html")
 
 @app.route("/upload", methods=["POST"])
 def upload_file():
