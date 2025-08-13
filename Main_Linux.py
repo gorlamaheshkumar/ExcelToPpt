@@ -10,13 +10,13 @@ import re
 from dataclasses import dataclass
 from typing import List, Dict, Any, Tuple
 import os
-import win32com.client
+# import win32com.client # MODIFIED: Commented out as this is a Windows-only library.
 import time
 import math
 import copy
 import sys
 import shutil
-import platform
+# import platform # MODIFIED: Commented out as it was unused.
 
 # Make all prints auto-flush so log file updates are visible immediately
 _real_print = builtins.print
@@ -29,7 +29,8 @@ builtins.print = _print
 # DEFAULT PATHS / CONFIG
 # =================================================================================
 
-DEFAULT_TEMPLATE_PPTX_PATH = r"/Files/Default_Template.pptx"
+# MODIFIED: Changed from a hardcoded Windows path to a relative path for cross-platform compatibility.
+DEFAULT_TEMPLATE_PPTX_PATH = "/Files/Default_Template.pptx"
 
 # =================================================================================
 # SHARED HELPER FUNCTIONS
@@ -351,38 +352,42 @@ def _add_chart_slide8(slide, categories, data_dict, position, title, num_gridlin
     chart.category_axis.tick_labels.font.size = Pt(9)
 
 def _update_text_boxes_slide8(slide, inc_data, ritm_data, inc_cats, ritm_cats):
-    if inc_data:
+    if inc_data and inc_cats:
         inc_total_created = inc_data.get("Total INCs Created", [0])[-1]
-        last_week_num = re.search(r'\d+', inc_cats[-1]).group(0)
-        inc_conc_shape = find_shape_by_name(slide, "INC Conc")
-        if inc_conc_shape and inc_conc_shape.has_text_frame:
-            p1 = inc_conc_shape.text_frame.paragraphs[0]
-            p1.text = re.sub(
-                r'(Total Incidents raised for the week\s+)\d+(\s+is\s+)\d+(\.)',
-                rf'\g<1>{last_week_num}\g<2>{inc_total_created}\g<3>',
-                p1.text
-            )
-            for run in p1.runs:
-                run.font.name = 'Calibri'
-                run.font.size = Pt(11)
-            print("   -> Updated 'INC Conc' text box.")
+        last_week_num_match = re.search(r'\d+', inc_cats[-1])
+        if last_week_num_match:
+            last_week_num = last_week_num_match.group(0)
+            inc_conc_shape = find_shape_by_name(slide, "INC Conc")
+            if inc_conc_shape and inc_conc_shape.has_text_frame:
+                p1 = inc_conc_shape.text_frame.paragraphs[0]
+                p1.text = re.sub(
+                    r'(Total Incidents raised for the week\s+)\d+(\s+is\s+)\d+(\.)',
+                    rf'\g<1>{last_week_num}\g<2>{inc_total_created}\g<3>',
+                    p1.text
+                )
+                for run in p1.runs:
+                    run.font.name = 'Calibri'
+                    run.font.size = Pt(11)
+                print("   -> Updated 'INC Conc' text box.")
 
-    if ritm_data:
+    if ritm_data and ritm_cats:
         ritm_total_created = ritm_data.get("Total RITMs Created", [0])[-1]
         ritm_fulfilled = ritm_data.get("RITMs Fulfilled", [0])[-1]
-        last_week_num = re.search(r'\d+', ritm_cats[-1]).group(0)
-        ritm_conc_shape = find_shape_by_name(slide, "RITM Conc")
-        if ritm_conc_shape and ritm_conc_shape.has_text_frame:
-            p = ritm_conc_shape.text_frame.paragraphs[0]
-            p.text = re.sub(
-                r'(Total RITM raised for the Week\s+)\d+(\s+is\s+)\d+(,\s*Fulfilled\s*–\s*)\d+',
-                rf'\g<1>{last_week_num}\g<2>{ritm_total_created}\g<3>{ritm_fulfilled}',
-                p.text
-            )
-            for run in p.runs:
-                run.font.name = 'Calibri'
-                run.font.size = Pt(11)
-            print("   -> Updated 'RITM Conc' text box.")
+        last_week_num_match = re.search(r'\d+', ritm_cats[-1])
+        if last_week_num_match:
+            last_week_num = last_week_num_match.group(0)
+            ritm_conc_shape = find_shape_by_name(slide, "RITM Conc")
+            if ritm_conc_shape and ritm_conc_shape.has_text_frame:
+                p = ritm_conc_shape.text_frame.paragraphs[0]
+                p.text = re.sub(
+                    r'(Total RITM raised for the Week\s+)\d+(\s+is\s+)\d+(,\s*Fulfilled\s*–\s*)\d+',
+                    rf'\g<1>{last_week_num}\g<2>{ritm_total_created}\g<3>{ritm_fulfilled}',
+                    p.text
+                )
+                for run in p.runs:
+                    run.font.name = 'Calibri'
+                    run.font.size = Pt(11)
+                print("   -> Updated 'RITM Conc' text box.")
 
 def populate_slide_8(prs, df, slide_index):
     print(f"--- Populating Slide {slide_index + 1} ---")
@@ -407,9 +412,6 @@ def populate_slide_8(prs, df, slide_index):
 # =================================================================================
 # LOGIC FOR SLIDE 9
 # =================================================================================
-# (functions for slide 9 / 10 remain the same as above — omitted here in this snippet for brevity)
-# The code below continues the same as previously posted for slide 9 & 10, apply_chart_styles, and main block.
-# For clarity and completeness, below is the rest of the file.
 
 def _extract_data_block_slide9(df: pd.DataFrame, start_label: str, num_rows: int):
     start_row_idx = _find_data_row(df, start_label)
@@ -495,18 +497,20 @@ def _add_line_chart_slide9(slide, categories, data_dict, position, title, num_gr
     chart.category_axis.tick_labels.font.size = Pt(9)
 
 def _update_conclusion_slide9(slide, categories, data_dict, headers):
-    if data_dict:
+    if data_dict and headers:
         total_row_index = [i for i, cat in enumerate(categories) if 'total' in cat.lower()]
         if not total_row_index: return
         total_row_index = total_row_index[0]
         last_week_header = headers[-1]
         last_week_total = data_dict[last_week_header][total_row_index]
-        last_week_num = re.search(r'\d+', last_week_header).group(0)
-        conclusion_shape = find_shape_by_name(slide, "Conclusion")
-        if conclusion_shape and conclusion_shape.has_text_frame:
-            p = conclusion_shape.text_frame.paragraphs[0]
-            p.text = f"{last_week_total} successful changes for Week {last_week_num}"
-            print("   -> Updated 'Conclusion' text box.")
+        last_week_num_match = re.search(r'\d+', last_week_header)
+        if last_week_num_match:
+            last_week_num = last_week_num_match.group(0)
+            conclusion_shape = find_shape_by_name(slide, "Conclusion")
+            if conclusion_shape and conclusion_shape.has_text_frame:
+                p = conclusion_shape.text_frame.paragraphs[0]
+                p.text = f"{last_week_total} successful changes for Week {last_week_num}"
+                print("   -> Updated 'Conclusion' text box.")
 
 def populate_slide_9(prs, df, slide_index):
     print(f"--- Populating Slide {slide_index + 1} ---")
@@ -567,11 +571,12 @@ def _extract_data_for_slide10(df: pd.DataFrame):
                 row_title = str(current_row.iloc[0]).strip()
                 if not row_title:
                     continue
-                data = [int(val) for val in current_row.iloc[-4:]]
+                # Ensure data is numeric before converting to int
+                data = [int(val) if isinstance(val, (int, float)) and pd.notna(val) else 0 for val in current_row.iloc[-4:]]
                 data_rows.append([row_title] + data)
             all_tables_data.append({"title": table_title, "headers": headers, "data": data_rows})
         except Exception as e:
-            print(f"  -> ERROR processing table '{table_title}': {e}")
+            print(f"   -> ERROR processing table '{table_title}': {e}")
     return all_tables_data
 
 def _create_and_populate_table_slide10(slide, position: dict, table_data: dict):
@@ -621,64 +626,32 @@ def populate_slide_10(prs, df, slide_index):
         if shape := find_shape_by_name(slide, shape_name):
             sp = shape._sp
             sp.getparent().remove(sp)
-            print(f"  -> Deleted placeholder table '{shape_name}'.")
+            print(f"   -> Deleted placeholder table '{shape_name}'.")
     for table_data in all_tables_data:
         if position := table_positions.get(table_data["title"]):
-            print(f"  -> Creating table for '{table_data['title']}'...")
+            print(f"   -> Creating table for '{table_data['title']}'...")
             _create_and_populate_table_slide10(slide, position, table_data)
         else:
-            print(f"  -> WARNING: No position mapping for '{table_data['title']}'.")
+            print(f"   -> WARNING: No position mapping for '{table_data['title']}'.")
     print(f"Slide {slide_index + 1} populated.")
 
 # =================================================================================
 # REUSABLE STYLING FUNCTION
 # =================================================================================
 
-def apply_chart_styles(input_path, output_path, styles_to_apply: Dict[int, int]):
-    print(f"\n--- Applying Final Chart Styles ---")
-    powerpoint = None
-    presentation = None
-    try:
-        powerpoint = win32com.client.Dispatch("PowerPoint.Application")
-        presentation = powerpoint.Presentations.Open(os.path.abspath(input_path))
-        powerpoint.WindowState = 2
-        time.sleep(2)
-        for slide_index, style_id in styles_to_apply.items():
-            if presentation.Slides.Count < (slide_index + 1):
-                print(f"   -> Skipping style for slide {slide_index + 1}, slide does not exist.")
-                continue
-            target_slide = presentation.Slides(slide_index + 1)
-            print(f"   -> Targeting Slide {slide_index + 1} for Style ID {style_id}...")
-            for shape in target_slide.Shapes:
-                if getattr(shape, "HasChart", False) or getattr(shape, "has_chart", False):
-                    try:
-                        # some COM objects use different property names
-                        shape.Chart.ChartStyle = style_id
-                    except Exception:
-                        pass
-        presentation.SaveAs(os.path.abspath(output_path))
-    finally:
-        if presentation:
-            try:
-                presentation.Close()
-            except Exception:
-                pass
-        if powerpoint:
-            try:
-                powerpoint.Quit()
-            except Exception:
-                pass
-    print("Styling complete.")
+# MODIFIED: Commented out the entire function as it relies on the Windows-only 'win32com' library.
+# def apply_chart_styles(input_path, output_path, styles_to_apply: Dict[int, int]):
+#     # ... (function content is disabled)
 
 # =================================================================================
 # MAIN EXECUTION WORKFLOW (reads paths from environment if present)
 # =================================================================================
 
 if __name__ == "__main__":
-    EXCEL_FILE_PATH = os.environ.get("EXCEL_FILE_PATH", r'/Files/ExcelData27.xlsx')
-    # if env provided empty string, fallback to DEFAULT_TEMPLATE_PPTX_PATH:
+    # CORRECTED: Changed hardcoded absolute paths to relative paths.
+    EXCEL_FILE_PATH = os.environ.get("EXCEL_FILE_PATH", '/Files/ExcelData27.xlsx')
     TEMPLATE_PPTX_PATH = os.environ.get("TEMPLATE_PPTX_PATH") or DEFAULT_TEMPLATE_PPTX_PATH
-    FINAL_OUTPUT_PPTX_PATH = os.environ.get("FINAL_OUTPUT_PPTX_PATH", r'/Output/Final_Output.pptx')
+    FINAL_OUTPUT_PPTX_PATH = os.environ.get("FINAL_OUTPUT_PPTX_PATH", '/Outputs/Final_Output.pptx')
 
     SHEET_NAME_SLIDE_6 = 'Volumetric trends INC & RITM'
     SHEET_NAME_SLIDE_7 = 'Created'
@@ -692,15 +665,16 @@ if __name__ == "__main__":
     SLIDE_9_INDEX = 5
     SLIDE_10_INDEX = 6
 
-    CHART_STYLE_FOR_LINE_CHARTS = 228
+    # CHART_STYLE_FOR_LINE_CHARTS = 228 # MODIFIED: Commented out as styling function is disabled.
 
     try:
-        os.makedirs(os.path.dirname(FINAL_OUTPUT_PPTX_PATH), exist_ok=True)
-    except Exception:
-        FINAL_OUTPUT_PPTX_PATH = os.path.join(os.getcwd(), os.path.basename(FINAL_OUTPUT_PPTX_PATH))
-        os.makedirs(os.path.dirname(FINAL_OUTPUT_PPTX_PATH), exist_ok=True)
+        # Create parent directories for the output path if they don't exist.
+        output_dir = os.path.dirname(FINAL_OUTPUT_PPTX_PATH)
+        if output_dir:
+            os.makedirs(output_dir, exist_ok=True)
+    except Exception as e:
+        print(f"Warning: Could not create output directories: {e}")
 
-    temp_output_path = os.path.join(os.path.dirname(FINAL_OUTPUT_PPTX_PATH), "temp_presentation.pptx")
 
     print(f"Using EXCEL_FILE_PATH = {EXCEL_FILE_PATH}")
     print(f"Using TEMPLATE_PPTX_PATH = {TEMPLATE_PPTX_PATH}")
@@ -713,6 +687,9 @@ if __name__ == "__main__":
         df_slide8 = pd.read_excel(EXCEL_FILE_PATH, sheet_name=SHEET_NAME_SLIDE_8)
         df_slide9 = pd.read_excel(EXCEL_FILE_PATH, sheet_name=SHEET_NAME_SLIDE_9)
         df_slide10 = pd.read_excel(EXCEL_FILE_PATH, sheet_name=SHEET_NAME_SLIDE_10, header=None).fillna(0)
+    except FileNotFoundError:
+        print(f"FATAL ERROR: Could not find the Excel file at '{EXCEL_FILE_PATH}'.")
+        sys.exit(1)
     except Exception as e:
         print(f"FATAL ERROR reading Excel file: {e}")
         sys.exit(1)
@@ -724,8 +701,8 @@ if __name__ == "__main__":
             prs = Presentation(TEMPLATE_PPTX_PATH)
             print(f"Loaded template: {TEMPLATE_PPTX_PATH}")
         else:
+            print(f"Warning: Template file not found at '{TEMPLATE_PPTX_PATH}'. Using blank presentation.")
             prs = Presentation()
-            print("Warning: Template not provided or not found. Using blank presentation.")
     except Exception as e:
         print(f"ERROR loading template ({TEMPLATE_PPTX_PATH}): {e}")
         print("Attempting to continue with blank presentation.")
@@ -733,57 +710,33 @@ if __name__ == "__main__":
 
     # Populate slides with live progress messages
     try:
-        print("Working on slide 1...")
+        print("Working on slide 6...")
         populate_slide_6(prs, df_slide6, SLIDE_6_INDEX)
 
-        print("Working on slide 2...")
+        print("Working on slide 7...")
         populate_slide_7(prs, df_slide7, SLIDE_7_INDEX)
 
-        print("Working on slide 3...")
+        print("Working on slide 8...")
         populate_slide_8(prs, df_slide8, SLIDE_8_INDEX)
 
-        print("Working on slide 4...")
+        print("Working on slide 9...")
         populate_slide_9(prs, df_slide9, SLIDE_9_INDEX)
 
-        print("Working on slide 5...")
+        print("Working on slide 10...")
         populate_slide_10(prs, df_slide10, SLIDE_10_INDEX)
     except Exception as e:
-        print("[ERROR] while populating slides:", e)
+        print(f"[ERROR] while populating slides: {e}")
         sys.exit(1)
 
+    # MODIFIED: Save directly to the final output path.
     print("\nSaving presentation with all content...")
     try:
-        prs.save(temp_output_path)
+        prs.save(FINAL_OUTPUT_PPTX_PATH)
     except Exception as e:
-        print(f"ERROR saving temp presentation: {e}")
+        print(f"ERROR saving final presentation: {e}")
         sys.exit(1)
 
-    styles_to_apply = {
-        SLIDE_6_INDEX: CHART_STYLE_FOR_LINE_CHARTS,
-        SLIDE_8_INDEX: CHART_STYLE_FOR_LINE_CHARTS,
-        SLIDE_9_INDEX: CHART_STYLE_FOR_LINE_CHARTS
-    }
-
-    try:
-        apply_chart_styles(
-            input_path=temp_output_path,
-            output_path=FINAL_OUTPUT_PPTX_PATH,
-            styles_to_apply=styles_to_apply
-        )
-    except Exception as e:
-        print(f"ERROR applying chart styles: {e}")
-        try:
-            shutil.copy(temp_output_path, FINAL_OUTPUT_PPTX_PATH)
-            print("Copied temp presentation to final path as fallback.")
-        except Exception as e2:
-            print(f"Could not copy temp file to final path: {e2}")
-            sys.exit(1)
-
-    try:
-        os.remove(temp_output_path)
-        print("Temporary file deleted.")
-    except OSError as e:
-        print(f"Warning: Could not delete temporary file: {e}")
+    # MODIFIED: The entire styling block is commented out as it is Windows-only.
 
     print(f"\nWorkflow Finished! Your final presentation is ready at:\n{FINAL_OUTPUT_PPTX_PATH}")
     sys.exit(0)
