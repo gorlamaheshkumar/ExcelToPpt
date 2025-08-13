@@ -30,7 +30,7 @@ builtins.print = _print
 # =================================================================================
 
 # MODIFIED: Changed from a hardcoded Windows path to a relative path for cross-platform compatibility.
-DEFAULT_TEMPLATE_PPTX_PATH = "/workspaces/ExcelToPpt/Files/Default_Template.pptx"
+DEFAULT_TEMPLATE_PPTX_PATH = "Files/Default_Template.pptx"
 
 # =================================================================================
 # SHARED HELPER FUNCTIONS
@@ -641,50 +641,17 @@ def populate_slide_10(prs, df, slide_index):
 
 # MODIFIED: Commented out the entire function as it relies on the Windows-only 'win32com' library.
 # def apply_chart_styles(input_path, output_path, styles_to_apply: Dict[int, int]):
-#     print(f"\n--- Applying Final Chart Styles ---")
-#     powerpoint = None
-#     presentation = None
-#     try:
-#         powerpoint = win32com.client.Dispatch("PowerPoint.Application")
-#         presentation = powerpoint.Presentations.Open(os.path.abspath(input_path))
-#         powerpoint.WindowState = 2
-#         time.sleep(2)
-#         for slide_index, style_id in styles_to_apply.items():
-#             if presentation.Slides.Count < (slide_index + 1):
-#                 print(f"   -> Skipping style for slide {slide_index + 1}, slide does not exist.")
-#                 continue
-#             target_slide = presentation.Slides(slide_index + 1)
-#             print(f"   -> Targeting Slide {slide_index + 1} for Style ID {style_id}...")
-#             for shape in target_slide.Shapes:
-#                 if getattr(shape, "HasChart", False) or getattr(shape, "has_chart", False):
-#                     try:
-#                         # some COM objects use different property names
-#                         shape.Chart.ChartStyle = style_id
-#                     except Exception:
-#                         pass
-#         presentation.SaveAs(os.path.abspath(output_path))
-#     finally:
-#         if presentation:
-#             try:
-#                 presentation.Close()
-#             except Exception:
-#                 pass
-#         if powerpoint:
-#             try:
-#                 powerpoint.Quit()
-#             except Exception:
-#                 pass
-#     print("Styling complete.")
+#     # ... (function content is disabled)
 
 # =================================================================================
 # MAIN EXECUTION WORKFLOW (reads paths from environment if present)
 # =================================================================================
 
 if __name__ == "__main__":
-    # MODIFIED: Changed hardcoded Windows paths to relative paths suitable for a server environment.
-    EXCEL_FILE_PATH = os.environ.get("EXCEL_FILE_PATH", '/Files/ExcelData27.xlsx')
+    # CORRECTED: Changed hardcoded absolute paths to relative paths.
+    EXCEL_FILE_PATH = os.environ.get("EXCEL_FILE_PATH", 'Files/ExcelData27.xlsx')
     TEMPLATE_PPTX_PATH = os.environ.get("TEMPLATE_PPTX_PATH") or DEFAULT_TEMPLATE_PPTX_PATH
-    FINAL_OUTPUT_PPTX_PATH = os.environ.get("FINAL_OUTPUT_PPTX_PATH", '/Outputs/Final_Output.pptx')
+    FINAL_OUTPUT_PPTX_PATH = os.environ.get("FINAL_OUTPUT_PPTX_PATH", 'Outputs/Final_Output.pptx')
 
     SHEET_NAME_SLIDE_6 = 'Volumetric trends INC & RITM'
     SHEET_NAME_SLIDE_7 = 'Created'
@@ -701,13 +668,13 @@ if __name__ == "__main__":
     # CHART_STYLE_FOR_LINE_CHARTS = 228 # MODIFIED: Commented out as styling function is disabled.
 
     try:
-        os.makedirs(os.path.dirname(FINAL_OUTPUT_PPTX_PATH), exist_ok=True)
-    except Exception:
-        FINAL_OUTPUT_PPTX_PATH = os.path.join(os.getcwd(), os.path.basename(FINAL_OUTPUT_PPTX_PATH))
-        os.makedirs(os.path.dirname(FINAL_OUTPUT_PPTX_PATH), exist_ok=True)
+        # Create parent directories for the output path if they don't exist.
+        output_dir = os.path.dirname(FINAL_OUTPUT_PPTX_PATH)
+        if output_dir:
+            os.makedirs(output_dir, exist_ok=True)
+    except Exception as e:
+        print(f"Warning: Could not create output directories: {e}")
 
-    # MODIFIED: Temporary path is no longer needed as we save directly to the final path.
-    # temp_output_path = os.path.join(os.path.dirname(FINAL_OUTPUT_PPTX_PATH), "temp_presentation.pptx")
 
     print(f"Using EXCEL_FILE_PATH = {EXCEL_FILE_PATH}")
     print(f"Using TEMPLATE_PPTX_PATH = {TEMPLATE_PPTX_PATH}")
@@ -720,6 +687,9 @@ if __name__ == "__main__":
         df_slide8 = pd.read_excel(EXCEL_FILE_PATH, sheet_name=SHEET_NAME_SLIDE_8)
         df_slide9 = pd.read_excel(EXCEL_FILE_PATH, sheet_name=SHEET_NAME_SLIDE_9)
         df_slide10 = pd.read_excel(EXCEL_FILE_PATH, sheet_name=SHEET_NAME_SLIDE_10, header=None).fillna(0)
+    except FileNotFoundError:
+        print(f"FATAL ERROR: Could not find the Excel file at '{EXCEL_FILE_PATH}'.")
+        sys.exit(1)
     except Exception as e:
         print(f"FATAL ERROR reading Excel file: {e}")
         sys.exit(1)
@@ -731,8 +701,8 @@ if __name__ == "__main__":
             prs = Presentation(TEMPLATE_PPTX_PATH)
             print(f"Loaded template: {TEMPLATE_PPTX_PATH}")
         else:
+            print(f"Warning: Template file not found at '{TEMPLATE_PPTX_PATH}'. Using blank presentation.")
             prs = Presentation()
-            print("Warning: Template not provided or not found. Using blank presentation.")
     except Exception as e:
         print(f"ERROR loading template ({TEMPLATE_PPTX_PATH}): {e}")
         print("Attempting to continue with blank presentation.")
@@ -740,7 +710,6 @@ if __name__ == "__main__":
 
     # Populate slides with live progress messages
     try:
-        # MODIFIED: Corrected slide numbering for print statements for better user feedback.
         print("Working on slide 6...")
         populate_slide_6(prs, df_slide6, SLIDE_6_INDEX)
 
@@ -756,11 +725,10 @@ if __name__ == "__main__":
         print("Working on slide 10...")
         populate_slide_10(prs, df_slide10, SLIDE_10_INDEX)
     except Exception as e:
-        print("[ERROR] while populating slides:", e)
+        print(f"[ERROR] while populating slides: {e}")
         sys.exit(1)
 
-    # MODIFIED: The original logic saved to a temp file, applied styles, then saved to final.
-    # The new logic saves directly to the final path.
+    # MODIFIED: Save directly to the final output path.
     print("\nSaving presentation with all content...")
     try:
         prs.save(FINAL_OUTPUT_PPTX_PATH)
@@ -769,32 +737,6 @@ if __name__ == "__main__":
         sys.exit(1)
 
     # MODIFIED: The entire styling block is commented out as it is Windows-only.
-    # styles_to_apply = {
-    #     SLIDE_6_INDEX: CHART_STYLE_FOR_LINE_CHARTS,
-    #     SLIDE_8_INDEX: CHART_STYLE_FOR_LINE_CHARTS,
-    #     SLIDE_9_INDEX: CHART_STYLE_FOR_LINE_CHARTS
-    # }
-
-    # try:
-    #     apply_chart_styles(
-    #         input_path=temp_output_path,
-    #         output_path=FINAL_OUTPUT_PPTX_PATH,
-    #         styles_to_apply=styles_to_apply
-    #     )
-    # except Exception as e:
-    #     print(f"ERROR applying chart styles: {e}")
-    #     try:
-    #         shutil.copy(temp_output_path, FINAL_OUTPUT_PPTX_PATH)
-    #         print("Copied temp presentation to final path as fallback.")
-    #     except Exception as e2:
-    #         print(f"Could not copy temp file to final path: {e2}")
-    #         sys.exit(1)
-
-    # try:
-    #     os.remove(temp_output_path)
-    #     print("Temporary file deleted.")
-    # except OSError as e:
-    #     print(f"Warning: Could not delete temporary file: {e}")
 
     print(f"\nWorkflow Finished! Your final presentation is ready at:\n{FINAL_OUTPUT_PPTX_PATH}")
     sys.exit(0)
