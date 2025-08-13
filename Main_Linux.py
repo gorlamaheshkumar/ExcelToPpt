@@ -30,7 +30,7 @@ builtins.print = _print
 # =================================================================================
 
 # MODIFIED: Changed from a hardcoded Windows path to a relative path for cross-platform compatibility.
-DEFAULT_TEMPLATE_PPTX_PATH = "Files/Default_Template.pptx"
+DEFAULT_TEMPLATE_PPTX_PATH = "/Files/Default_Template.pptx"
 
 # =================================================================================
 # SHARED HELPER FUNCTIONS
@@ -649,9 +649,9 @@ def populate_slide_10(prs, df, slide_index):
 
 if __name__ == "__main__":
     # CORRECTED: Changed hardcoded absolute paths to relative paths.
-    EXCEL_FILE_PATH = os.environ.get("EXCEL_FILE_PATH", 'Files/ExcelData27.xlsx')
+    EXCEL_FILE_PATH = os.environ.get("EXCEL_FILE_PATH", '/Files/ExcelData27.xlsx')
     TEMPLATE_PPTX_PATH = os.environ.get("TEMPLATE_PPTX_PATH") or DEFAULT_TEMPLATE_PPTX_PATH
-    FINAL_OUTPUT_PPTX_PATH = os.environ.get("FINAL_OUTPUT_PPTX_PATH", 'Outputs/Final_Output.pptx')
+    FINAL_OUTPUT_PPTX_PATH = os.environ.get("FINAL_OUTPUT_PPTX_PATH", '/Outputs/Final_Output.pptx')
 
     SHEET_NAME_SLIDE_6 = 'Volumetric trends INC & RITM'
     SHEET_NAME_SLIDE_7 = 'Created'
