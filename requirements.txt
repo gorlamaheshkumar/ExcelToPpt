@@ -1,4 +1,6 @@
+Flask
 pandas
 python-pptx
-pywin32
 openpyxl
+gunicorn
+pywin32

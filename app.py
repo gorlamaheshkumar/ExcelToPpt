@@ -12,7 +12,7 @@ BASE_DIR = os.path.dirname(__file__)
 UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
 OUTPUT_DIR = os.path.join(BASE_DIR, "outputs")
 TEMPLATE_DIR = os.path.join(BASE_DIR, "templates_files")  # optional templates
-MAIN_SCRIPT = os.path.join(BASE_DIR, "main.py")  # path to your main.py
+MAIN_SCRIPT = os.path.join(BASE_DIR, "Main.py")  # path to your main.py
 
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)

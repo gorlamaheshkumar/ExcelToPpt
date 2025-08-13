@@ -29,7 +29,7 @@ builtins.print = _print
 # DEFAULT PATHS / CONFIG
 # =================================================================================
 
-DEFAULT_TEMPLATE_PPTX_PATH = r"C:/Users/2399586/VScode/ExcelToPpt/Files/Default_Template.pptx"
+DEFAULT_TEMPLATE_PPTX_PATH = r"/Files/Default_Template.pptx"
 
 # =================================================================================
 # SHARED HELPER FUNCTIONS
@@ -675,10 +675,10 @@ def apply_chart_styles(input_path, output_path, styles_to_apply: Dict[int, int])
 # =================================================================================
 
 if __name__ == "__main__":
-    EXCEL_FILE_PATH = os.environ.get("EXCEL_FILE_PATH", r'C:/Users/2399586/VScode/ExcelToPpt/Files/ExcelData27.xlsx')
+    EXCEL_FILE_PATH = os.environ.get("EXCEL_FILE_PATH", r'/Files/ExcelData27.xlsx')
     # if env provided empty string, fallback to DEFAULT_TEMPLATE_PPTX_PATH:
     TEMPLATE_PPTX_PATH = os.environ.get("TEMPLATE_PPTX_PATH") or DEFAULT_TEMPLATE_PPTX_PATH
-    FINAL_OUTPUT_PPTX_PATH = os.environ.get("FINAL_OUTPUT_PPTX_PATH", r'C:/Users/2399586/VScode/ExcelToPpt/Outputs/Final_Output.pptx')
+    FINAL_OUTPUT_PPTX_PATH = os.environ.get("FINAL_OUTPUT_PPTX_PATH", r'Output/Final_Output.pptx')
 
     SHEET_NAME_SLIDE_6 = 'Volumetric trends INC & RITM'
     SHEET_NAME_SLIDE_7 = 'Created'
