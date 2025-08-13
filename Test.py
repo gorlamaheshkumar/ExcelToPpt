@@ -1,13 +1,10 @@
-import time
-import os
+from flask import Flask
 
-print("--- Python Test Script Starting Up ---")
-print(f"This process will now run forever. Process ID: {os.getpid()}")
-print("You should see a 'Hello world' message in the logs every 10 seconds.")
-print("---------------------------------------------------")
+# Create the Flask web application object
+app = Flask(__name__)
 
-# Infinite loop to keep the container running
-while True:
-    print("Hello world! The script is alive.")
-    # The script will print this message every 10 seconds
-    time.sleep(10)
+# Create a route for the homepage ("/")
+@app.route("/")
+def hello():
+    # This is what will be displayed on the webpage
+    return "<h1>✅ Hello world from a real web app!</h1>"
